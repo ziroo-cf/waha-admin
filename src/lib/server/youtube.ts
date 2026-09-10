@@ -144,41 +144,52 @@ export async function ingestYouTubeContent(
 			videos_added: 1,
 		};
 	} else if (type === 'playlist') {
-		const itemsUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${extractedId}&maxResults=50&key=${env.YOUTUBE_API_KEY}`;
-		const itemsRes = await fetch(itemsUrl);
-		const itemsData = await itemsRes.json();
+		let nextPageToken: string | undefined = '';
+		const MAX_PAGES = 5; // سيتفقد حتى 5 صفحات (250 فيديو كحد أقصى لتفادي الـ Timeout)
+		let pageCount = 0;
 
-		if (!itemsRes.ok) {
-			return {
-				success: false,
-				error: `خطأ من YouTube API عند جلب فيديوهات القائمة (${itemsRes.status})`,
-			};
-		}
+		do {
+			const tokenParam = nextPageToken ? `&pageToken=${nextPageToken}` : '';
+			const itemsUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${extractedId}&maxResults=50${tokenParam}&key=${env.YOUTUBE_API_KEY}`;
 
-		if (itemsData.items && itemsData.items.length > 0) {
-			for (const item of itemsData.items) {
-				const snippet = item.snippet;
-				const videoId = snippet.resourceId?.videoId;
+			const itemsRes = await fetch(itemsUrl);
+			const itemsData = await itemsRes.json();
 
-				if (
-					!videoId ||
-					snippet.title === 'Private video' ||
-					snippet.title === 'Deleted video'
-				)
-					continue;
-
-				videosToInsert.push({
-					id: videoId,
-					title: snippet.title,
-					thumbnail: snippet.thumbnails?.high?.url ||
-						snippet.thumbnails?.medium?.url ||
-						snippet.thumbnails?.default?.url ||
-						'',
-					category,
-					status: 'pending',
-				});
+			if (!itemsRes.ok) {
+				return {
+					success: false,
+					error: `خطأ من YouTube API عند جلب فيديوهات القائمة (${itemsRes.status})`,
+				};
 			}
-		}
+
+			if (itemsData.items && itemsData.items.length > 0) {
+				for (const item of itemsData.items) {
+					const snippet = item.snippet;
+					const videoId = snippet.resourceId?.videoId;
+
+					if (
+						!videoId ||
+						snippet.title === 'Private video' ||
+						snippet.title === 'Deleted video'
+					)
+						continue;
+
+						videosToInsert.push({
+							id: videoId,
+							title: snippet.title,
+							thumbnail: snippet.thumbnails?.high?.url ||
+							snippet.thumbnails?.medium?.url ||
+							snippet.thumbnails?.default?.url ||
+							'',
+							category,
+							status: 'pending',
+						});
+				}
+			}
+
+			nextPageToken = itemsData.nextPageToken;
+			pageCount++;
+		} while (nextPageToken && pageCount < MAX_PAGES);
 
 		responsePayload = {
 			success: true,
@@ -189,26 +200,28 @@ export async function ingestYouTubeContent(
 
 	if (videosToInsert.length > 0) {
 		const supabase = (await import('./supabase')).getSupabaseAdmin();
-		const { error } = await supabase
-			.from('videos')
-			.upsert(videosToInsert, {
-				onConflict: 'id',
-				ignoreDuplicates: true
-			})
-			.select('id');
+		const { data, error } = await supabase
+		.from('videos')
+		.upsert(videosToInsert, {
+			onConflict: 'id',
+		  ignoreDuplicates: true
+		})
+		.select('id');
 
 		if (error) {
+			console.error('[youtube-ingest] Supabase Error:', error);
 			return {
 				success: false,
-				error: 'فشل حفظ البيانات في قاعدة البيانات',
+				error: `فشل حفظ البيانات: ${error.message}`,
 			};
 		}
+
+		// تحديث العدد بالفيديوهات التي تم إدخالها فعلياً (بدون المكرر)
+		responsePayload.videos_added = data?.length ?? videosToInsert.length;
 	} else {
 		responsePayload.video_title = responsePayload.video_title ?? '';
 		responsePayload.channel_name = responsePayload.video_title ?? '';
 		responsePayload.videos_added = 0;
-		// Keep success true so the UI can show "no videos found" rather
-		// than a hard failure when the playlist legitimately has none.
 	}
 
 	responsePayload.channel_name = responsePayload.video_title ?? input;
