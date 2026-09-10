@@ -191,7 +191,10 @@ export async function ingestYouTubeContent(
 		const supabase = (await import('./supabase')).getSupabaseAdmin();
 		const { error } = await supabase
 			.from('videos')
-			.insert(videosToInsert)
+			.upsert(videosToInsert, {
+				onConflict: 'id',
+				ignoreDuplicates: true
+			})
 			.select('id');
 
 		if (error) {
