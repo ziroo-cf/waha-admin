@@ -355,7 +355,7 @@
 </script>
 
 <svelte:head>
-	<title>لوحة تحكم وها · إدارة المحتوى</title>
+	<title>لوحة تحكم واحة · إدارة المحتوى</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -366,7 +366,7 @@
 			<div class="flex min-w-0 items-center gap-2.5">
 				<img src="/favicon.png" alt="" aria-hidden="true" class="h-8 w-8 shrink-0 rounded-md object-cover" />
 				<div class="min-w-0 leading-tight">
-					<h1 class="truncate text-sm font-semibold">لوحة تحكم وها</h1>
+					<h1 class="truncate text-sm font-semibold">لوحة تحكم واحة</h1>
 					<p class="truncate text-[11px] text-zinc-500">نظام إدارة المحتوى</p>
 				</div>
 			</div>
