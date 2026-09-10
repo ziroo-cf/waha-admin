@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import { CATEGORIES } from '$lib/types';
 
 	interface Props {
 		open: boolean;
@@ -13,7 +14,7 @@
 	let { open, onclose, onresult }: Props = $props();
 
 	let input = $state('');
-	let category = $state('عام');
+	let category = $state<(typeof CATEGORIES)[number]>('عام');
 	let importing = $state(false);
 	let inputEl = $state<HTMLInputElement | null>(null);
 
@@ -147,13 +148,9 @@
 					disabled={importing}
 					class="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-950/60 px-3 text-sm text-zinc-300 transition focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					<option value="عام">عام</option>
-					<option value="تعليمي">تعليمي</option>
-					<option value="ترفيه">ترفيه</option>
-					<option value="رياضة">رياضة</option>
-					<option value="تقنية">تقنية</option>
-					<option value="موسيقى">موسيقى</option>
-					<option value="أخبار">أخبار</option>
+					{#each CATEGORIES as cat (cat)}
+						<option value={cat}>{cat}</option>
+					{/each}
 				</select>
 
 				<!-- Footer -->

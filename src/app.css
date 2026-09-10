@@ -18,6 +18,14 @@ html {
 	font-family: var(--font-sans);
 }
 
+/* Hide scrollbars while keeping scrollability (tabs row on phones) */
+.scrollbar-none {
+	scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+	display: none;
+}
+
 /* Nicer scrollbars for the dark admin shell */
 ::-webkit-scrollbar {
 	width: 10px;

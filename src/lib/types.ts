@@ -8,7 +8,28 @@ export interface VideoRow {
 	thumbnail: string | null;
 	category: string | null;
 	status: string;
+	/** Row insertion timestamp (`created_at`) — may be absent on legacy rows. */
+	created_at?: string | null;
 }
+
+/**
+ * The complete, fixed list of content categories (طلب المستخدم).
+ * The category editor + filters use exactly these values — never a
+ * free-form list derived from the database.
+ */
+export const CATEGORIES = [
+	'رسوم متحركة',
+	'أناشيد',
+	'قصص',
+	'معرفة',
+	'برامج دينية',
+	'عام'
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
+/** Sort directions for date-of-addition ordering. */
+export type SortDir = 'newest' | 'oldest';
 
 /** Row of the `video_urls` table (import queue metadata, if present). */
 export interface VideoUrlRow {

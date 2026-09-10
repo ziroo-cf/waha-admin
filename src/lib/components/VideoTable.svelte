@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { VideoRow } from '$lib/types';
+	import { relTimeAr } from '$lib/utils/date';
 
 	interface Props {
 		videos: VideoRow[];
@@ -11,7 +12,7 @@
 		submit: SubmitFunction;
 		categorySubmit: SubmitFunction;
 		titleSubmit: SubmitFunction;
-		categories: string[];
+		categories: readonly string[];
 		selected: Set<string>;
 		ontoggleselect: (id: string) => void;
 		onselectall: () => void;
@@ -79,7 +80,7 @@
 		);
 </script>
 
-<div class="overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/80">
+<div class="min-w-[52rem] overflow-x-auto rounded-xl border border-zinc-800/80 bg-zinc-900/80">
 	<table class="w-full text-right text-xs">
 		<thead>
 			<tr class="border-b border-zinc-800 bg-zinc-900/60">
@@ -94,6 +95,7 @@
 				</th>
 				<th class="px-3 align-middle font-medium text-zinc-400">الفيديو</th>
 				<th class="px-3 align-middle font-medium text-zinc-400">التصنيف</th>
+				<th class="w-28 px-3 align-middle font-medium text-zinc-400" title="ترتيب حسب تاريخ الإضافة">تاريخ الإضافة</th>
 				<th class="w-28 px-3 align-middle font-medium text-zinc-400">الحالة</th>
 				<th class="w-28 px-3 align-middle font-medium text-zinc-400">المعرّف</th>
 				<th class="w-32 px-3 align-middle font-medium text-zinc-400">الإجراءات</th>
@@ -203,6 +205,15 @@
 								{/if}
 							</select>
 						</form>
+					</td>
+
+					<!-- Date of addition -->
+					<td class="whitespace-nowrap p-2 text-zinc-500" title={video.created_at ? new Date(video.created_at).toLocaleString('ar') : ''}>
+						{#if video.created_at}
+							{relTimeAr(video.created_at)}
+						{:else}
+							<span class="text-zinc-700">—</span>
+						{/if}
 					</td>
 
 					<!-- Status badge -->

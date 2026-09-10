@@ -35,7 +35,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	let query = supabase
 		.from('videos')
-		.select('id, title, thumbnail, category, status');
+		.select('id, title, thumbnail, category, status, created_at');
 
 	if (scope === 'filtered') {
 		const status = url.searchParams.get('status');
@@ -48,7 +48,10 @@ export const GET: RequestHandler = async ({ url }) => {
 		if (category) query = query.eq('category', category);
 	}
 
-	const { data, error } = await query.order('id', { ascending: true });
+	// Export ordered by date of addition (newest first), matching the dashboard.
+	const { data, error } = await query
+		.order('created_at', { ascending: false, nullsFirst: false })
+		.order('id', { ascending: true });
 
 	if (error) {
 		console.error('[waha] export: failed →', error.message);
@@ -73,7 +76,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	const csv = toCsv(
 		rows as unknown as Record<string, unknown>[],
-		['id', 'title', 'thumbnail', 'category', 'status']
+		['id', 'title', 'thumbnail', 'category', 'status', 'created_at']
 	);
 	return new Response(csv, {
 		headers: {

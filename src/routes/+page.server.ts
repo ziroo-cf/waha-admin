@@ -1,8 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getSupabaseAdmin } from '$lib/server/supabase';
-import type { VideoRow, StatusTab, UndoPayload } from '$lib/types';
-import { PER_PAGE_OPTIONS } from '$lib/types';
+import type { VideoRow, StatusTab, UndoPayload, SortDir } from '$lib/types';
+import { CATEGORIES, PER_PAGE_OPTIONS } from '$lib/types';
 
 export type { VideoRow };
 
@@ -49,46 +49,49 @@ function parsePage(raw: string | null): number {
 	return Number.isFinite(n) && n >= 1 ? n : 1;
 }
 
+/** Sanitize the `sort` URL param (date-of-addition order; defaults to newest). */
+function parseSort(raw: string | null): SortDir {
+	return raw === 'oldest' ? 'oldest' : 'newest';
+}
+
 /* ────────────────────────────────────────────────────────────────
  *  LOAD — filtered, searchable, paginated
  * ──────────────────────────────────────────────────────────────── */
 export const load: PageServerLoad = async ({ url }) => {
-	const supabase = getSupabaseAdmin();
-
-	const tab = parseTab(url.searchParams.get('status'));
+	const supabase = getSupabaseAdmin();	const tab = parseTab(url.searchParams.get('status'));
 	const q = (url.searchParams.get('q') ?? '').trim().slice(0, 120);
 	const category = (url.searchParams.get('category') ?? '').trim().slice(0, 120) || null;
 	const perPage = parsePerPage(url.searchParams.get('perPage'));
 	const requestedPage = parsePage(url.searchParams.get('page'));
+	const sort = parseSort(url.searchParams.get('sort'));
 
-	// Distinct categories currently in use (feeds every <select> in the UI).
-	const categoriesRes = await supabase
-		.from('videos')
-		.select('category')
-		.not('category', 'is', null)
-		.limit(1000);
-	if (categoriesRes.error) {
-		console.error('[waha] load: failed to fetch categories →', categoriesRes.error.message);
-		throw new Error('تعذّر تحميل قائمة التصنيفات من قاعدة البيانات.');
-	}
-	const categories = [
-		...new Set(
-			(categoriesRes.data ?? [])
-				.map((r) => r.category?.trim())
-				.filter((c): c is string => !!c)
-		)
-	].sort((a, b) => a.localeCompare(b, 'ar'));
+	/**
+	 * The category entry method is FIXED (طلب المستخدم): exactly these six
+	 * categories everywhere — editors, filters and bulk tagging. The DB is
+	 * never consulted for the list.
+	 */
+	const categories: string[] = [...CATEGORIES];
 
 	// Build the shared filter chain for the active tab.
-	const base = supabase.from('videos').select('id, title, thumbnail, category, status', { count: 'exact' });
+	const base = supabase
+		.from('videos')
+		.select('id, title, thumbnail, category, status, created_at', { count: 'exact' });
 	const filtered = tab === 'all' ? base : base.eq('status', tab);
 	if (q) filtered.or(`title.ilike.%${q}%,id.ilike.%${q}%`);
 	if (category) filtered.eq('category', category);
 
 	const from = (requestedPage - 1) * perPage;
-	const { data: videos, count, error } = await filtered
-		.order('id', { ascending: tab !== 'approved' })
+	/**
+	 * Sort by DATE OF ADDITION (طلب المستخدم). Newest first is the default.
+	 * `created_at` (desc) orders by insertion time; rows inserted together
+	 * fall back to their id for a stable order. When the column is missing
+	 * we degrade gracefully to id-based ordering.
+	 */
+	const pageQuery = filtered
+		.order('created_at', { ascending: sort === 'oldest', nullsFirst: false })
+		.order('id', { ascending: sort === 'oldest' })
 		.range(from, from + perPage - 1);
+	const { data: videos, count, error } = await pageQuery;
 
 	if (error) {
 		console.error('[waha] load: failed to fetch videos →', error.message);
@@ -116,6 +119,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		total,
 		totalPages,
 		categories,
+		sort,
 		stats: {
 			total: totalRes.count ?? 0,
 			pending: pendingRes.count ?? 0,

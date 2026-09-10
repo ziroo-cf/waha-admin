@@ -8,9 +8,14 @@ calls, service-role key never leaves the server.
 
 ## Features
 
-- 🏷 **Category editing** — inline `<select>` on every card, populated with the
-  distinct categories already in the database; an empty choice clears the
-  category (SQL NULL). Changes go through `?/set-category`.
+- 🏷 **Fixed category list** — every category picker (inline card/table editor,
+  import modal, bulk tagging, filter) uses the same fixed six categories:
+  **رسوم متحركة · أناشيد · قصص · معرفة · برامج دينية · عام**. An empty choice
+  clears the category (SQL NULL). Changes go through `?/set-category`.
+- 📅 **Date-of-addition sorting** — the list is ordered by `created_at`
+  (newest first by default) with an الأحدث/الأقدم toggle in the toolbar;
+  cards and table rows show a relative "added" time. Falls back to id
+  ordering if the column is missing.
 - 🎯 **Group selection** — per-card checkboxes + "تحديد الكل"; a floating
   action bar offers bulk **approve** (`?/approve-selected`) and bulk **delete**
   (`?/delete-selected`) with a confirm dialog. Selection survives tab switches
@@ -22,9 +27,14 @@ calls, service-role key never leaves the server.
 - ↩ **Revert** an approved video back to pending (undo mistakes)
 - 🗑 **Delete** with a confirmation dialog
 - 🔔 **Toast feedback** for every action, per-card spinners, double-submit guards
-- 🖥 **Mature admin UI** — dense icon-based cards, 4-column grid on wide
-  screens, SVG icons, blue ring on selected cards
-- 📱 **Responsive RTL UI** with Arabic-first typography
+- 🖥 **Mature admin UI** — dense icon-based cards (up to 4 columns on wide
+  screens, 2 on tablets), SVG icons, blue ring on selected cards, a floating
+  selection bar for bulk actions and compact KPI cards that double as tab
+  shortcuts
+- 📱 **Responsive RTL UI** with Arabic-first typography — two-row toolbar,
+  condensed labels on phones, horizontally scrollable tabs, a min-width
+  table with horizontal scrolling, and a thumb-reach bulk action bar on
+  small screens
 - 🚫 **No-JS fallback** — every action is a plain HTML form that still works
   without JavaScript
 
@@ -54,9 +64,20 @@ create table videos (
   title      text,
   thumbnail  text,
   category   text,
-  status     text not null default 'pending'
+  status     text not null default 'pending',
+  created_at timestamptz not null default now()  -- powers date-of-addition sorting
 );
 ```
+
+> If your existing table has no `created_at` column, add it (rows get the
+> time they were inserted from then on):
+>
+> ```sql
+> alter table videos add column if not exists created_at timestamptz not null default now();
+> ```
+>
+> Until the column exists the dashboard silently falls back to id-based
+> ordering, so nothing breaks.
 
 ## 2. Project setup
 
@@ -126,8 +147,10 @@ src/
                                   #   bulk approve (use:enhance forms)
 ```
 
-- **`load()`** — fetches pending + approved lists, total counts, and the
-  distinct category list in parallel via the service-role client.
+- **`load()`** — fetches the filtered, paginated video list ordered by
+  `created_at` (date of addition), total counts, and serves the **fixed**
+  category list (from `$lib/types.ts`, never DB-derived) via the
+  service-role client.
 - **`?/approve`** — sets the video's `status = 'approved'`.
 - **`?/revert`** — sets the video's `status = 'pending'` (undo).
 - **`?/set-category`** — updates (or clears) one video's `category`.

@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { VideoRow } from '$lib/types';
+	import { relTimeAr } from '$lib/utils/date';
 
 	interface Props {
 		video: VideoRow;
@@ -13,8 +14,8 @@
 		submit: SubmitFunction;
 		/** submit callback for the category form (?/set-category) */
 		categorySubmit: SubmitFunction;
-		/** distinct categories from the DB (for the inline editor) */
-		categories: string[];
+		/** fixed category list (for the inline editor) */
+		categories: readonly string[];
 		/** whether this card is part of the current selection */
 		selected: boolean;
 		/** selection toggle (checkbox) */
@@ -29,7 +30,6 @@
 	const isBusy = $derived(busyId === video.id);
 	const isAnyBusy = $derived(busyId !== null);
 	const currentCategory = $derived(video.category ?? '');
-	let showId = $state(false);
 
 	// ── Thumbnail fallback ──────────────────────────────────────
 	const placeholderThumb =
@@ -121,6 +121,20 @@
 				</span>
 			{/if}
 
+				<!-- Date-of-addition chip (bottom-left, muted) -->
+			{#if video.created_at}
+				<span
+					class="absolute bottom-2 left-2 flex items-center gap-1 rounded border border-zinc-700/40 bg-zinc-950/60 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400 backdrop-blur"
+					title="تاريخ الإضافة: {new Date(video.created_at).toLocaleString('ar')}"
+				>
+					<svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<rect x="3" y="4" width="18" height="18" rx="2" />
+						<path d="M16 2v4 M8 2v4 M3 10h18" />
+					</svg>
+					{relTimeAr(video.created_at)}
+				</span>
+			{/if}
+
 			<!-- Hover overlay with play icon -->
 			<div
 				class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition group-hover:opacity-100"
@@ -132,37 +146,14 @@
 				</div>
 			</div>
 
-			<!-- Category chip (only if exists) -->
-			{#if video.category}
-				<span
-					class="absolute bottom-2 right-2 rounded border border-zinc-700/50 bg-zinc-950/60 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur"
-				>
-					{video.category}
-				</span>
-			{/if}
 		</div>
 	</button>
 
-	<!-- Body -->
-	<div class="flex flex-col gap-2 p-3">
+	<!-- Body: compact — the editor select doubles as the category display (one category control per card) -->
+	<div class="flex flex-col gap-1.5 p-3">
 		<h3 class="line-clamp-2 text-[13px] font-medium leading-snug text-zinc-100" title={video.title ?? ''}>
 			{video.title ?? 'بدون عنوان'}
 		</h3>
-
-		<!-- Category tags (static, elegant) -->
-		<div class="flex flex-wrap gap-1">
-			{#if video.category}
-				<span
-					class="rounded-md border border-zinc-700/60 bg-zinc-800/50 px-2 py-0.5 text-[10px] font-medium text-zinc-300"
-				>
-					{video.category}
-				</span>
-			{:else}
-				<span class="rounded-md border border-dashed border-zinc-700/40 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
-					بدون تصنيف
-				</span>
-			{/if}
-		</div>
 
 		<!-- Inline category editor: a real POST form (?/set-category). -->
 		<form
@@ -205,46 +196,25 @@
 			</button>
 		</form>
 
-		<!-- Video ID with copy button (hover reveal) -->
-		<div class="relative">
-			<div
-				class="flex items-center gap-1 rounded-md bg-zinc-800/40 px-2 py-1 text-[10px] font-mono text-zinc-500 group-hover:bg-zinc-800/60"
-			>
-				<svg class="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-					<rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-					<line x1="6" y1="6" x2="6.01" y2="6" />
-					<line x1="6" y1="18" x2="6.01" y2="18" />
-				</svg>
-				<span
-					class="truncate font-mono"
-					dir="ltr"
-					title="انقر للنسخ"
-					data-copy-target={video.id}
-				>{showId ? video.id : '••••••••••••••••'}</span>
-			</div>
-			<button
-				type="button"
-				onclick={copyId}
-				class="absolute right-1 top-1/2 -translate-y-1/2 flex h-5 w-5 cursor-pointer items-center justify-center rounded opacity-0 transition hover:bg-zinc-700 group-hover:opacity-100 focus:opacity-100 {showId ? '!opacity-100' : ''}"
-				title="نسخ معرّف الفيديو"
-				aria-label="نسخ معرّف الفيديو"
-			>
-				{#if showId}
-					<svg class="h-3 w-3 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M20 6 9 17l-5-5" />
-					</svg>
-				{:else}
-					<svg class="h-3 w-3 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-					</svg>
-				{/if}
-			</button>
-		</div>
+		<!-- Video ID: always visible (truncated), click the row to copy -->
+		<button
+			type="button"
+			onclick={copyId}
+			class="flex w-full cursor-pointer items-center gap-1 rounded-md bg-zinc-800/40 px-2 py-1 text-start text-[10px] font-mono text-zinc-500 transition hover:bg-zinc-800/60 hover:text-zinc-400"
+			title="انقر للنسخ: {video.id}"
+			aria-label="نسخ معرّف الفيديو {video.id}"
+		>
+			<svg class="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+				<rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+				<line x1="6" y1="6" x2="6.01" y2="6" />
+				<line x1="6" y1="18" x2="6.01" y2="18" />
+			</svg>
+			<span class="truncate font-mono" dir="ltr" data-copy-target={video.id}>{video.id}</span>
+		</button>
 
 		<!-- Actions: ghost buttons for approve/revert, delete -->
-		<div class="mt-0.5 grid grid-cols-3 gap-1.5">
+		<div class="grid grid-cols-2 gap-1.5">
 			{#if mode === 'pending'}
 				<!-- APPROVE (ghost button — slate background) -->
 				<form method="POST" action="?/approve" use:enhance={submit} class="contents">
@@ -297,9 +267,6 @@
 					</button>
 				</form>
 			{/if}
-
-			<!-- Spacer (or could add a "View" button in future) -->
-			<div class="flex h-8"></div>
 
 			<!-- DELETE -->
 			<form
