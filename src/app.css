@@ -1,0 +1,35 @@
+/*
+ * Waha Admin global styles (Tailwind v4 — single `@import` entry point,
+ * no tailwind.config.js needed).
+ */
+
+/* Google font "Cairo" — a clean, modern Arabic-first typeface.
+   NOTE: must precede `@import 'tailwindcss'` so all @imports stay first. */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+	--font-sans: 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+		'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+}
+
+html {
+	font-family: var(--font-sans);
+}
+
+/* Nicer scrollbars for the dark admin shell */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: #3f3f46; /* zinc-700 */
+	border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #52525b; /* zinc-600 */
+}

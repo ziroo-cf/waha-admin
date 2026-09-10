@@ -1,0 +1,176 @@
+
+> waha-admin@1.0.0 dev
+> vite dev --port 5174 --strictPort
+
+
+  VITE v6.4.3  ready in 1490 ms
+
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: use --host to expose
+Using secrets defined in .env
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+
+[1;31m[500] GET /[0m
+ReferenceError: window is not defined
+    at /home/ziro/Documents/Waha/Waha-dashboard/src/lib/components/ImportModal.svelte:21:26
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at ImportModal (src/lib/components/ImportModal.svelte:11:13)
+    at eval (src/routes/+page.svelte:1425:37)
+    at /home/ziro/Documents/Waha/Waha-dashboard/node_modules/svelte/src/internal/server/renderer.js:325:11
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:215:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:323:8)
+    at _page (src/routes/+page.svelte:17:13)
+1:15:22 AM [vite] (ssr) page reload src/lib/components/ImportModal.svelte
+1:20:08 AM [vite] (client) page reload .svelte-kit/generated/client/nodes/0.js
+1:20:08 AM [vite] (client) page reload .svelte-kit/generated/client/nodes/1.js
+1:20:08 AM [vite] (client) page reload .svelte-kit/generated/client/nodes/2.js
+1:20:08 AM [vite] (client) page reload .svelte-kit/generated/client/app.js
+1:20:08 AM [vite] (client) page reload .svelte-kit/generated/client/matchers.js
+1:20:08 AM [vite] (ssr) page reload .svelte-kit/generated/shared/error-template.js
+1:20:08 AM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+1:20:08 AM [vite] (client) page reload .svelte-kit/generated/root.js
+1:20:08 AM [vite] (ssr) page reload .svelte-kit/generated/root.js
