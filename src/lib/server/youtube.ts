@@ -145,7 +145,7 @@ export async function ingestYouTubeContent(
 		};
 	} else if (type === 'playlist') {
 		let nextPageToken: string | undefined = '';
-		const MAX_PAGES = 5; // سيتفقد حتى 5 صفحات (250 فيديو كحد أقصى لتفادي الـ Timeout)
+		const MAX_PAGES = 10; //  5 = 250 videos
 		let pageCount = 0;
 
 		do {
