@@ -364,7 +364,7 @@
 	<div class="mx-auto max-w-7xl px-4 sm:px-6">
 		<div class="flex h-14 items-center justify-between gap-3">
 			<div class="flex min-w-0 items-center gap-2.5">
-				<img src="/favicon.png" alt="" aria-hidden="true" class="h-8 w-8 shrink-0 rounded-md object-cover" />
+				<img src="/favicon.png" alt="" aria-hidden="true" class="h-10 w-10 shrink-0 rounded-md object-cover" />
 				<div class="min-w-0 leading-tight">
 					<h1 class="truncate text-sm font-semibold">لوحة تحكم واحة</h1>
 					<p class="truncate text-[11px] text-zinc-500">نظام إدارة المحتوى</p>
