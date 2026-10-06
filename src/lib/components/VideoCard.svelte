@@ -107,14 +107,14 @@
 			<!-- Status badge (top-left): clean glassy pill -->
 			{#if mode === 'pending'}
 				<span
-					class="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full border border-amber-400/25 bg-zinc-950/60 px-2 py-0.5 text-[10px] font-medium text-amber-400 backdrop-blur"
+					class="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 rounded-full border border-amber-400/25 bg-zinc-950/60 px-2 py-0.5 text-[10px] font-medium text-amber-400 backdrop-blur"
 				>
 					<span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
 					بانتظار المراجعة
 				</span>
 			{:else}
 				<span
-					class="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-zinc-950/60 px-2 py-0.5 text-[10px] font-medium text-emerald-400 backdrop-blur"
+					class="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-zinc-950/60 px-2 py-0.5 text-[10px] font-medium text-emerald-400 backdrop-blur"
 				>
 					<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
 					معتمد
@@ -124,7 +124,7 @@
 				<!-- Date-of-addition chip (bottom-left, muted) -->
 			{#if video.created_at}
 				<span
-					class="absolute bottom-2 left-2 flex items-center gap-1 rounded border border-zinc-700/40 bg-zinc-950/60 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400 backdrop-blur"
+					class="absolute bottom-2 left-2 z-10 flex items-center gap-1 rounded border border-zinc-700/40 bg-zinc-950/60 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400 backdrop-blur"
 					title="تاريخ الإضافة: {new Date(video.created_at).toLocaleString('ar')}"
 				>
 					<svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -138,7 +138,7 @@
 			<!-- Duration chip (bottom-right) -->
 			{#if formatDuration(video.duration)}
 				<span
-					class="absolute bottom-2 right-2 flex items-center gap-1 rounded border border-zinc-700/40 bg-zinc-950/70 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur"
+					class="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded border border-zinc-700/40 bg-zinc-950/70 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur"
 					title="مدة الفيديو"
 					dir="ltr"
 				>

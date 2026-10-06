@@ -124,7 +124,7 @@
 							<button
 								type="button"
 								onclick={() => previewVideo(video)}
-								class="flex h-10 w-14 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded bg-zinc-800 text-zinc-500 transition hover:ring-1 hover:ring-blue-500/50"
+								class="relative flex h-10 w-14 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded bg-zinc-800 text-zinc-500 transition hover:ring-1 hover:ring-blue-500/50"
 								title="معاينة الفيديو"
 								aria-label="معاينة {video.title ?? video.id}"
 							>
@@ -141,6 +141,15 @@
 										<path d="M22 8.5a2.5 2.5 0 0 0-2.5-2.5h-13A2.5 2.5 0 0 0 4 8.5v7A2.5 2.5 0 0 0 6.5 18h13a2.5 2.5 0 0 0 2.5-2.5Z" />
 										<path d="M22 9.5l-4.5 2.5 4.5 2.5Z" />
 									</svg>
+								{/if}
+								{#if formatDuration(video.duration)}
+									<span
+										class="absolute bottom-0.5 right-0.5 z-10 rounded bg-zinc-950/85 px-1 py-0.5 text-[9px] font-medium leading-none text-zinc-200 backdrop-blur"
+										dir="ltr"
+										title="مدة الفيديو"
+									>
+										{formatDuration(video.duration)}
+									</span>
 								{/if}
 							</button>
 

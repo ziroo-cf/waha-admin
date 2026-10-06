@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getSupabaseAdmin } from '$lib/server/supabase';
+import { env } from '$env/dynamic/private';
 import type { VideoRow, StatusTab, UndoPayload, SortDir } from '$lib/types';
 import { CATEGORIES, PER_PAGE_OPTIONS } from '$lib/types';
 
@@ -109,8 +110,53 @@ export const load: PageServerLoad = async ({ url }) => {
 		supabase.from('videos').select('id', { count: 'exact', head: true }).eq('status', 'approved')
 	]);
 
+	const videoList = (videos ?? []) as VideoRow[];
+
+	// If any videos lack duration (null or placeholder '00:00'), auto-resolve via YouTube Data API and backfill to Supabase
+	const missingDurationVideos = videoList.filter(
+		(v) =>
+			(!v.duration ||
+				v.duration === '00:00' ||
+				v.duration === '0:00' ||
+				v.duration === '0') &&
+			/^[A-Za-z0-9_-]{11}$/.test(v.id)
+	);
+
+	if (missingDurationVideos.length > 0 && env.YOUTUBE_API_KEY) {
+		try {
+			const { formatIsoDuration } = await import('$lib/server/youtube');
+			const ids = missingDurationVideos.map((v) => v.id);
+			for (let i = 0; i < ids.length; i += 50) {
+				const batch = ids.slice(i, i + 50).join(',');
+				const durationsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${batch}&key=${env.YOUTUBE_API_KEY}`;
+				const durationsRes = await fetch(durationsUrl);
+				if (durationsRes.ok) {
+					const durationsData = await durationsRes.json();
+					const updatePromises: Promise<unknown>[] = [];
+					for (const item of durationsData.items ?? []) {
+						const dur = formatIsoDuration(item.contentDetails?.duration);
+						if (dur !== null) {
+							const target = videoList.find((v) => v.id === item.id);
+							if (target) target.duration = dur;
+							updatePromises.push(
+								Promise.resolve(supabase.from('videos').update({ duration: dur }).eq('id', item.id))
+							);
+						}
+					}
+					if (updatePromises.length > 0) {
+						Promise.allSettled(updatePromises).catch((e) =>
+							console.warn('[waha] Supabase duration update error →', e)
+						);
+					}
+				}
+			}
+		} catch (err) {
+			console.warn('[waha] Failed to auto-resolve missing durations →', err);
+		}
+	}
+
 	return {
-		videos: (videos ?? []) as VideoRow[],
+		videos: videoList,
 		tab,
 		q,
 		category,
@@ -234,11 +280,29 @@ export const actions: Actions = {
 		const category = pick('category', 'categoryName', 'channel');
 		const channelTitle = pick('channel', 'channelTitle', 'author');
 
+		let duration: string | null = null;
+		if (env.YOUTUBE_API_KEY) {
+			try {
+				const { formatIsoDuration } = await import('$lib/server/youtube');
+				const durationsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${videoId}&key=${env.YOUTUBE_API_KEY}`;
+				const durationsRes = await fetch(durationsUrl);
+				if (durationsRes.ok) {
+					const durationsData = await durationsRes.json();
+					const item = durationsData.items?.[0];
+					if (item) {
+						duration = formatIsoDuration(item.contentDetails?.duration);
+					}
+				}
+			} catch (err) {
+				console.warn('[waha] fetchFromWorker: duration lookup failed →', err);
+			}
+		}
+
 		const supabase = getSupabaseAdmin();
 		const { data: inserted, error: upsertError } = await supabase
 			.from('videos')
 			.upsert(
-				{ id: videoId, title, thumbnail, category, status: 'pending' },
+				{ id: videoId, title, thumbnail, category, status: 'pending', duration },
 				{ onConflict: 'id' }
 			)
 			.select('id, title')
@@ -283,7 +347,7 @@ export const actions: Actions = {
 		const supabase = getSupabaseAdmin();
 		const { data: video, error: fetchError } = await supabase
 			.from('videos')
-			.select('id, title, thumbnail, category, status')
+			.select('id, title, thumbnail, category, status, duration')
 			.eq('id', videoId)
 			.maybeSingle();
 
@@ -323,7 +387,7 @@ export const actions: Actions = {
 		const supabase = getSupabaseAdmin();
 		const { data: video, error: fetchError } = await supabase
 			.from('videos')
-			.select('id, title, thumbnail, category, status')
+			.select('id, title, thumbnail, category, status, duration')
 			.eq('id', videoId)
 			.maybeSingle();
 
@@ -370,7 +434,7 @@ export const actions: Actions = {
 		const supabase = getSupabaseAdmin();
 		const { data: video, error: fetchError } = await supabase
 			.from('videos')
-			.select('id, title, thumbnail, category, status')
+			.select('id, title, thumbnail, category, status, duration')
 			.eq('id', videoId)
 			.maybeSingle();
 
@@ -419,7 +483,7 @@ export const actions: Actions = {
 		const supabase = getSupabaseAdmin();
 		const { data: video, error: fetchError } = await supabase
 			.from('videos')
-			.select('id, title, thumbnail, category, status')
+			.select('id, title, thumbnail, category, status, duration')
 			.eq('id', videoId)
 			.maybeSingle();
 
@@ -575,7 +639,7 @@ export const actions: Actions = {
 		const supabase = getSupabaseAdmin();
 		const { data: rows, error: fetchError } = await supabase
 			.from('videos')
-			.select('id, title, thumbnail, category, status')
+			.select('id, title, thumbnail, category, status, duration')
 			.in('id', ids);
 
 		if (fetchError) {
@@ -612,7 +676,7 @@ export const actions: Actions = {
 		const supabase = getSupabaseAdmin();
 		const { data: video, error: fetchError } = await supabase
 			.from('videos')
-			.select('id, title, thumbnail, category, status')
+			.select('id, title, thumbnail, category, status, duration')
 			.eq('id', videoId)
 			.maybeSingle();
 

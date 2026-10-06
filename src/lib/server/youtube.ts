@@ -82,6 +82,19 @@ export function parseIsoDuration(iso: string | undefined | null): number | null 
 }
 
 /**
+ * Convert an ISO-8601 duration into standard mm:ss / hh:mm:ss text format.
+ */
+export function formatIsoDuration(iso: string | undefined | null): string | null {
+	const seconds = parseIsoDuration(iso);
+	if (seconds === null || seconds < 0) return null;
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = seconds % 60;
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+/**
  * In-core YouTube → Supabase ingestion.
  *
  * Replaces the external Cloudflare Worker call. Accepts a single `input`
@@ -154,7 +167,7 @@ export async function ingestYouTubeContent(
 				'',
 			category,
 			status: 'pending',
-			duration: parseIsoDuration(item.contentDetails?.duration),
+			duration: formatIsoDuration(item.contentDetails?.duration),
 		});
 
 		responsePayload = {
@@ -215,7 +228,7 @@ export async function ingestYouTubeContent(
 		// playlistItems does not return durations, so resolve them in one
 		// batched `videos.list` call (50 ids per request) and map them back.
 		const ids = videosToInsert.map((v) => v.id);
-		const durationById = new Map<string, number | null>();
+		const durationById = new Map<string, string | null>();
 		for (let i = 0; i < ids.length; i += 50) {
 			const batch = ids.slice(i, i + 50).join(',');
 			const durationsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${batch}&key=${env.YOUTUBE_API_KEY}`;
@@ -223,7 +236,7 @@ export async function ingestYouTubeContent(
 				const durationsRes = await fetch(durationsUrl);
 				const durationsData = await durationsRes.json();
 				for (const item of durationsData.items ?? []) {
-					durationById.set(item.id, parseIsoDuration(item.contentDetails?.duration));
+					durationById.set(item.id, formatIsoDuration(item.contentDetails?.duration));
 				}
 			} catch (err) {
 				// Duration is best-effort — never fail the whole import over it.

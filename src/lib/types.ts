@@ -8,8 +8,8 @@ export interface VideoRow {
 	thumbnail: string | null;
 	category: string | null;
 	status: string;
-	/** Video length in seconds, as returned by the YouTube API. */
-	duration?: number | null;
+	/** Video length formatted (mm:ss / hh:mm:ss) or in seconds. */
+	duration?: string | number | null;
 	/** Row insertion timestamp (`created_at`) — may be absent on legacy rows. */
 	created_at?: string | null;
 }

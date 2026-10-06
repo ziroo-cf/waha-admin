@@ -19,17 +19,58 @@ export function relTimeAr(date: Date | string, now: Date = new Date()): string {
 }
 
 /**
- * Format a video length (in seconds) as `m:ss` / `h:mm:ss`.
- * Returns null for missing or negative values so callers can show a placeholder.
+ * Format a video length (seconds, mm:ss, hh:mm:ss, or ISO duration) as `m:ss` / `h:mm:ss`.
+ * Returns null for missing, zero (`00:00`), or negative values.
  */
-export function formatDuration(seconds: number | null | undefined): string | null {
-	if (seconds === null || seconds === undefined || !Number.isFinite(seconds) || seconds < 0) {
-		return null;
+export function formatDuration(duration: number | string | null | undefined): string | null {
+	if (duration === null || duration === undefined) return null;
+	const s = String(duration).trim();
+	if (!s || s === '00:00' || s === '0:00' || s === '0') return null;
+
+	// Already formatted: mm:ss or hh:mm:ss
+	if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(s)) {
+		const parts = s.split(':').map(Number);
+		if (parts.length === 2) {
+			const [m, sec] = parts;
+			return `${m}:${String(sec).padStart(2, '0')}`;
+		}
+		if (parts.length === 3) {
+			const [h, m, sec] = parts;
+			return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+		}
+		return s;
 	}
-	const total = Math.floor(seconds);
-	const h = Math.floor(total / 3600);
-	const m = Math.floor((total % 3600) / 60);
-	const s = total % 60;
-	const pad = (n: number) => String(n).padStart(2, '0');
-	return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+
+	// Number or numeric string (seconds)
+	const num = Number(s);
+	if (Number.isFinite(num) && num > 0) {
+		const total = Math.floor(num);
+		const h = Math.floor(total / 3600);
+		const m = Math.floor((total % 3600) / 60);
+		const sec = total % 60;
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
+	}
+
+	// ISO 8601 duration (e.g. PT1M27S)
+	if (s.startsWith('P')) {
+		const match = s.match(/^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+		if (match) {
+			const [, d, h, m, sec] = match;
+			const totalSeconds =
+				Number(d ?? 0) * 86400 +
+				Number(h ?? 0) * 3600 +
+				Number(m ?? 0) * 60 +
+				Number(sec ?? 0);
+			if (totalSeconds > 0) {
+				const hours = Math.floor(totalSeconds / 3600);
+				const mins = Math.floor((totalSeconds % 3600) / 60);
+				const secs = totalSeconds % 60;
+				const pad = (n: number) => String(n).padStart(2, '0');
+				return hours > 0 ? `${hours}:${pad(mins)}:${pad(secs)}` : `${mins}:${pad(secs)}`;
+			}
+		}
+	}
+
+	return null;
 }
