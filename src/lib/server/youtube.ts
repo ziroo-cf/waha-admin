@@ -285,3 +285,68 @@ export async function ingestYouTubeContent(
 
 	return responsePayload;
 }
+
+/**
+ * Query YouTube Data API to check availability of a list of video IDs (up to 50 per call).
+ * Returns a map of detected issues (deleted, private, not embeddable) keyed by video ID.
+ */
+export async function checkYouTubeVideosAvailability(
+	ids: string[]
+): Promise<Map<string, { type: 'deleted_or_unavailable' | 'private' | 'not_embeddable'; reason: string }>> {
+	const issues = new Map<string, { type: 'deleted_or_unavailable' | 'private' | 'not_embeddable'; reason: string }>();
+	if (!ids.length || !env.YOUTUBE_API_KEY) return issues;
+
+	const validIds = ids.filter((id) => /^[A-Za-z0-9_-]{11}$/.test(id));
+	for (const id of ids) {
+		if (!validIds.includes(id)) {
+			issues.set(id, { type: 'deleted_or_unavailable', reason: 'معرّف يوتيوب غير صالح' });
+		}
+	}
+
+	for (let i = 0; i < validIds.length; i += 50) {
+		const batch = validIds.slice(i, i + 50);
+		const url = `https://www.googleapis.com/youtube/v3/videos?part=status&id=${batch.join(',')}&key=${env.YOUTUBE_API_KEY}`;
+		try {
+			const res = await fetch(url);
+			if (!res.ok) {
+				console.warn('[youtube-check] YouTube API responded with', res.status);
+				continue;
+			}
+			const data = (await res.json()) as { items?: Array<{ id: string; status?: { privacyStatus?: string; embeddable?: boolean } }> };
+			const returnedItems = new Map<string, { privacyStatus?: string; embeddable?: boolean }>();
+			for (const item of data.items ?? []) {
+				returnedItems.set(item.id, item.status ?? {});
+			}
+
+			for (const id of batch) {
+				const status = returnedItems.get(id);
+				if (!status) {
+					// Video not returned in items = deleted, private without access, or terminated
+					issues.set(id, {
+						type: 'deleted_or_unavailable',
+						reason: 'محذوف أو غير متاح على يوتيوب'
+					});
+				} else {
+					const privacy = status.privacyStatus;
+					const embeddable = status.embeddable;
+
+					if (privacy === 'private') {
+						issues.set(id, {
+							type: 'private',
+							reason: 'فيديو خاص (Private)'
+						});
+					} else if (embeddable === false) {
+						issues.set(id, {
+							type: 'not_embeddable',
+							reason: 'غير مسموح بتضمينه (Not Embeddable)'
+						});
+					}
+				}
+			}
+		} catch (err) {
+			console.error('[youtube-check] Failed to check batch:', err);
+		}
+	}
+
+	return issues;
+}

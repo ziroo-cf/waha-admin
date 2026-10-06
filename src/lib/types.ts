@@ -41,10 +41,21 @@ export interface VideoUrlRow {
 }
 
 /** Which moderation tab is active. */
-export type StatusTab = 'pending' | 'approved' | 'all';
+export type StatusTab = 'pending' | 'approved' | 'unavailable' | 'all';
 
 /** Valid per-page sizes for server-side pagination. */
 export const PER_PAGE_OPTIONS = [15, 30, 50] as const;
+
+/** Types of issues found when validating video availability on YouTube. */
+export type AvailabilityIssueType = 'deleted_or_unavailable' | 'private' | 'not_embeddable';
+
+export interface VideoAvailabilityIssue {
+	id: string;
+	title: string | null;
+	thumbnail: string | null;
+	type: AvailabilityIssueType;
+	reason: string;
+}
 
 /** One entry in the client-side activity audit log. */
 export interface ActivityEntry {

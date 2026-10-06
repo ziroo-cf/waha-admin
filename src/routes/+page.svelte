@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { PageProps } from './$types';
@@ -7,6 +7,7 @@
 	import VideoTable from '$lib/components/VideoTable.svelte';
 	import VideoModal from '$lib/components/VideoModal.svelte';
 	import ImportModal from '$lib/components/ImportModal.svelte';
+	import AvailabilityModal from '$lib/components/AvailabilityModal.svelte';
 	import ActivityDrawer from '$lib/components/ActivityDrawer.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import type { VideoRow, StatusTab, ActivityEntry, UndoPayload, SortDir } from '$lib/types';
@@ -78,6 +79,17 @@
 		navigate({ status: next }, { resetPage: true });
 	}
 
+	/** KPI/tab badge count for a given moderation tab. */
+	function tabCount(t: StatusTab): number {
+		return t === 'pending'
+			? stats.pending
+			: t === 'approved'
+				? stats.approved
+				: t === 'unavailable'
+					? stats.unavailable
+					: stats.total;
+	}
+
 	function switchSort(next: SortDir) {
 		navigate({ sort: next }, { resetPage: true });
 	}
@@ -124,10 +136,16 @@
 	let previewVideoState = $state<VideoRow | null>(null);
 	let previewOpen = $state(false);
 	let importOpen = $state(false);
+	let availabilityOpen = $state(false);
 
 	function openPreview(video: VideoRow) {
 		previewVideoState = video;
 		previewOpen = true;
+	}
+
+	/** Reload the server data after the availability modal mutates rows. */
+	function refreshData() {
+		invalidateAll();
 	}
 
 	function closePreview() {
@@ -387,6 +405,20 @@
 					<span class="sm:hidden">استيراد</span>
 				</button>
 
+				<!-- Availability check -->
+				<button
+					type="button"
+					onclick={() => (availabilityOpen = true)}
+					class="flex h-8 items-center gap-1.5 rounded-md border border-zinc-800 bg-zinc-900 px-2.5 text-xs font-medium text-zinc-300 transition hover:border-zinc-700 hover:bg-zinc-800"
+				>
+					<svg class="h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+						<path d="m9 12 2 2 4-4" />
+					</svg>
+					<span class="hidden sm:inline">فحص الصلاحية</span>
+					<span class="sm:hidden">فحص</span>
+				</button>
+
 				<!-- Activity log toggle -->
 				<button
 					type="button"
@@ -424,7 +456,7 @@
 	</div>
 
 	<!-- KPI cards (tap targets double as tab shortcuts) -->
-	<div class="mb-3 grid grid-cols-3 gap-2 sm:mb-4 sm:gap-3">
+	<div class="mb-3 grid grid-cols-2 gap-2 sm:mb-4 sm:grid-cols-4 sm:gap-3">
 		<!-- Total -->
 		<button
 			type="button"
@@ -477,6 +509,24 @@
 				<p class="truncate text-[10px] text-zinc-500 sm:text-xs">معتمدة</p>
 			</div>
 		</button>
+
+		<!-- Unavailable -->
+		<button
+			type="button"
+			onclick={() => switchTab('unavailable')}
+			class="flex items-center gap-3 rounded-xl border border-zinc-800/80 bg-zinc-900/80 p-3 text-start transition hover:border-zinc-700/80 hover:bg-zinc-900 sm:p-4"
+		>
+			<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-red-500/10 text-red-500">
+				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="12" r="10" />
+					<path d="m5 5 14 14" />
+				</svg>
+			</div>
+			<div class="min-w-0">
+				<div class="text-lg font-semibold tabular-nums tracking-tight text-zinc-100 sm:text-2xl">{stats.unavailable}</div>
+				<p class="truncate text-[10px] text-zinc-500 sm:text-xs">غير متاحة</p>
+			</div>
+		</button>
 	</div>
 
 	<!-- ═══════════════════════════════════════════════════════════ -->
@@ -487,7 +537,7 @@
 		<div class="mb-2 flex flex-wrap items-center gap-2 border-b border-zinc-800/60 pb-2">
 			<!-- Tabs -->
 			<div class="scrollbar-none flex h-9 max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-1" role="tablist">
-				{#each [['pending', 'بانتظار المراجعة', 'المعلّق'], ['approved', 'معتمدة', 'معتمدة'], ['all', 'الكل', 'الكل']] as [t, label, shortLabel] (t)}
+				{#each [['pending', 'بانتظار المراجعة', 'المعلّق'], ['approved', 'معتمدة', 'معتمدة'], ['unavailable', 'غير متاحة', 'غير متاح'], ['all', 'الكل', 'الكل']] as [t, label, shortLabel] (t)}
 					<button
 						type="button"
 						role="tab"
@@ -500,7 +550,7 @@
 						<span class="hidden sm:inline">{label}</span>
 						<span class="sm:hidden">{shortLabel}</span>
 						<span class="rounded bg-zinc-700/80 px-1.5 text-[10px] font-semibold tabular-nums {tab === t ? 'text-zinc-200' : 'text-zinc-500'}">
-							{t === 'pending' ? stats.pending : t === 'approved' ? stats.approved : stats.total}
+							{tabCount(t as StatusTab)}
 						</span>
 					</button>
 				{/each}
@@ -966,6 +1016,16 @@
 
 <!-- Video Preview Modal -->
 <VideoModal video={previewVideoState} open={previewOpen} onclose={closePreview} />
+
+<!-- Availability Check Modal -->
+<AvailabilityModal
+	open={availabilityOpen}
+	currentPageVideos={videos}
+	totalVideosCount={stats.total}
+	onclose={() => (availabilityOpen = false)}
+	onlog={logActivity}
+	onrefresh={refreshData}
+/>
 
 {#snippet EmptyState()}
 	<div class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 px-6 py-16 text-center">

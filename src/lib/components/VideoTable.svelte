@@ -8,7 +8,7 @@
 		videos: VideoRow[];
 		busyId: string | null;
 		/** which moderation list is shown ('all' shows a real status badge per row) */
-		mode: 'pending' | 'approved' | 'all';
+		mode: 'pending' | 'approved' | 'unavailable' | 'all';
 		submit: SubmitFunction;
 		categorySubmit: SubmitFunction;
 		titleSubmit: SubmitFunction;
@@ -236,7 +236,14 @@
 
 					<!-- Status badge -->
 					<td class="p-2">
-						{#if mode === 'all' ? video.status === 'approved' : mode === 'approved'}
+						{#if video.status === 'unavailable'}
+							<span
+								class="inline-flex items-center gap-1.5 rounded-full border border-red-400/25 bg-red-500/10 px-2 py-0.5 text-[10px] font-medium text-red-400"
+							>
+								<span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+								غير متاح
+							</span>
+						{:else if mode === 'all' ? video.status === 'approved' : mode === 'approved'}
 							<span
 								class="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400"
 							>

@@ -105,7 +105,14 @@
 			<div class="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-zinc-950/10"></div>
 
 			<!-- Status badge (top-left): clean glassy pill -->
-			{#if mode === 'pending'}
+			{#if video.status === 'unavailable'}
+				<span
+					class="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 rounded-full border border-red-400/25 bg-zinc-950/60 px-2 py-0.5 text-[10px] font-medium text-red-400 backdrop-blur"
+				>
+					<span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+					غير متاح
+				</span>
+			{:else if mode === 'pending'}
 				<span
 					class="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 rounded-full border border-amber-400/25 bg-zinc-950/60 px-2 py-0.5 text-[10px] font-medium text-amber-400 backdrop-blur"
 				>

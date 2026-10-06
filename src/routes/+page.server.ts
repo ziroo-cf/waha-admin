@@ -35,7 +35,7 @@ function parseIds(form: FormData, field = 'ids'): string[] {
 
 /** Sanitize the `status` URL param into a valid tab (defaults to `pending`). */
 function parseTab(raw: string | null): StatusTab {
-	return raw === 'approved' || raw === 'all' ? raw : 'pending';
+	return raw === 'approved' || raw === 'all' || raw === 'unavailable' ? raw : 'pending';
 }
 
 /** Sanitize the per-page URL param into one of the allowed sizes. */
@@ -104,10 +104,11 @@ export const load: PageServerLoad = async ({ url }) => {
 	const page = Math.min(requestedPage, totalPages); // clamp for the UI
 
 	// Parallel counts for the KPI cards + tab badges.
-	const [totalRes, pendingRes, approvedRes] = await Promise.all([
+	const [totalRes, pendingRes, approvedRes, unavailableRes] = await Promise.all([
 		supabase.from('videos').select('id', { count: 'exact', head: true }),
 		supabase.from('videos').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-		supabase.from('videos').select('id', { count: 'exact', head: true }).eq('status', 'approved')
+		supabase.from('videos').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+		supabase.from('videos').select('id', { count: 'exact', head: true }).eq('status', 'unavailable')
 	]);
 
 	const videoList = (videos ?? []) as VideoRow[];
@@ -169,7 +170,8 @@ export const load: PageServerLoad = async ({ url }) => {
 		stats: {
 			total: totalRes.count ?? 0,
 			pending: pendingRes.count ?? 0,
-			approved: approvedRes.count ?? 0
+			approved: approvedRes.count ?? 0,
+			unavailable: unavailableRes.count ?? 0
 		}
 	};
 };
