@@ -17,3 +17,19 @@ export function relTimeAr(date: Date | string, now: Date = new Date()): string {
 	if (days < 30) return `قبل ${days} أيام`;
 	return d.toLocaleDateString('ar', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+
+/**
+ * Format a video length (in seconds) as `m:ss` / `h:mm:ss`.
+ * Returns null for missing or negative values so callers can show a placeholder.
+ */
+export function formatDuration(seconds: number | null | undefined): string | null {
+	if (seconds === null || seconds === undefined || !Number.isFinite(seconds) || seconds < 0) {
+		return null;
+	}
+	const total = Math.floor(seconds);
+	const h = Math.floor(total / 3600);
+	const m = Math.floor((total % 3600) / 60);
+	const s = total % 60;
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}

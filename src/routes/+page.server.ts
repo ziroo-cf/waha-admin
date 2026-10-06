@@ -75,7 +75,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	// Build the shared filter chain for the active tab.
 	const base = supabase
 		.from('videos')
-		.select('id, title, thumbnail, category, status, created_at', { count: 'exact' });
+		.select('id, title, thumbnail, category, status, duration, created_at', { count: 'exact' });
 	const filtered = tab === 'all' ? base : base.eq('status', tab);
 	if (q) filtered.or(`title.ilike.%${q}%,id.ilike.%${q}%`);
 	if (category) filtered.eq('category', category);

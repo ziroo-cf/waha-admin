@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { VideoRow } from '$lib/types';
-	import { relTimeAr } from '$lib/utils/date';
+	import { relTimeAr, formatDuration } from '$lib/utils/date';
 
 	interface Props {
 		videos: VideoRow[];
@@ -175,6 +175,15 @@
 									>
 										{video.title ?? 'بدون عنوان'}
 									</button>
+								{/if}
+								{#if formatDuration(video.duration)}
+									<span class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-zinc-500" title="مدة الفيديو">
+										<svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<circle cx="12" cy="12" r="10" />
+											<path d="M12 6v6l4 2" />
+										</svg>
+										<span dir="ltr">{formatDuration(video.duration)}</span>
+									</span>
 								{/if}
 			</div>
 						</div>

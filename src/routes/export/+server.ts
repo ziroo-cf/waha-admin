@@ -35,7 +35,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	let query = supabase
 		.from('videos')
-		.select('id, title, thumbnail, category, status, created_at');
+		.select('id, title, thumbnail, category, status, duration, created_at');
 
 	if (scope === 'filtered') {
 		const status = url.searchParams.get('status');
@@ -76,7 +76,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	const csv = toCsv(
 		rows as unknown as Record<string, unknown>[],
-		['id', 'title', 'thumbnail', 'category', 'status', 'created_at']
+		['id', 'title', 'thumbnail', 'category', 'status', 'duration', 'created_at']
 	);
 	return new Response(csv, {
 		headers: {

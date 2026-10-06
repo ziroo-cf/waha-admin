@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { VideoRow } from '$lib/types';
+	import { formatDuration } from '$lib/utils/date';
 
 	interface Props {
 		video: VideoRow | null;
@@ -110,6 +111,11 @@
 						{#if video?.category}
 							<span class="rounded-full border border-zinc-700/60 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-medium text-zinc-300">
 								{video.category}
+							</span>
+						{/if}
+						{#if formatDuration(video?.duration)}
+							<span class="rounded-full border border-zinc-700/60 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-medium text-zinc-300" dir="ltr" title="مدة الفيديو">
+								{formatDuration(video?.duration)}
 							</span>
 						{/if}
 						<span class="rounded-full border border-zinc-700/60 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-medium text-zinc-400" dir="ltr">

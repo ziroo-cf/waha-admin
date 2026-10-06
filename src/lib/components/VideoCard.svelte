@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { VideoRow } from '$lib/types';
-	import { relTimeAr } from '$lib/utils/date';
+	import { relTimeAr, formatDuration } from '$lib/utils/date';
 
 	interface Props {
 		video: VideoRow;
@@ -132,6 +132,21 @@
 						<path d="M16 2v4 M8 2v4 M3 10h18" />
 					</svg>
 					{relTimeAr(video.created_at)}
+				</span>
+			{/if}
+
+			<!-- Duration chip (bottom-right) -->
+			{#if formatDuration(video.duration)}
+				<span
+					class="absolute bottom-2 right-2 flex items-center gap-1 rounded border border-zinc-700/40 bg-zinc-950/70 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur"
+					title="مدة الفيديو"
+					dir="ltr"
+				>
+					<svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<circle cx="12" cy="12" r="10" />
+						<path d="M12 6v6l4 2" />
+					</svg>
+					{formatDuration(video.duration)}
 				</span>
 			{/if}
 

@@ -64,6 +64,24 @@ interface ImportError {
 type ImportResponse = ImportResult | ImportError;
 
 /**
+ * Convert an ISO-8601 duration (`PT1H2M3S`, as returned by the YouTube API
+ * `contentDetails.duration` field) into a whole number of seconds.
+ * Returns null when the input is missing or unparseable.
+ */
+export function parseIsoDuration(iso: string | undefined | null): number | null {
+	if (!iso) return null;
+	const match = iso.match(/^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+	if (!match) return null;
+	const [, d, h, m, s] = match;
+	const seconds =
+		(Number(d ?? 0) * 86400) +
+		(Number(h ?? 0) * 3600) +
+		(Number(m ?? 0) * 60) +
+		Number(s ?? 0);
+	return Number.isFinite(seconds) ? seconds : null;
+}
+
+/**
  * In-core YouTube → Supabase ingestion.
  *
  * Replaces the external Cloudflare Worker call. Accepts a single `input`
@@ -107,7 +125,7 @@ export async function ingestYouTubeContent(
 	};
 
 	if (type === 'video') {
-		const videoUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${extractedId}&key=${env.YOUTUBE_API_KEY}`;
+		const videoUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${extractedId}&key=${env.YOUTUBE_API_KEY}`;
 		const videoRes = await fetch(videoUrl);
 		const videoData = await videoRes.json();
 
@@ -125,7 +143,8 @@ export async function ingestYouTubeContent(
 			};
 		}
 
-		const snippet = videoData.items[0].snippet;
+		const item = videoData.items[0];
+		const snippet = item.snippet;
 		videosToInsert.push({
 			id: extractedId,
 			title: snippet.title,
@@ -135,6 +154,7 @@ export async function ingestYouTubeContent(
 				'',
 			category,
 			status: 'pending',
+			duration: parseIsoDuration(item.contentDetails?.duration),
 		});
 
 		responsePayload = {
@@ -183,6 +203,7 @@ export async function ingestYouTubeContent(
 							'',
 							category,
 							status: 'pending',
+							duration: null,
 						});
 				}
 			}
@@ -190,6 +211,28 @@ export async function ingestYouTubeContent(
 			nextPageToken = itemsData.nextPageToken;
 			pageCount++;
 		} while (nextPageToken && pageCount < MAX_PAGES);
+
+		// playlistItems does not return durations, so resolve them in one
+		// batched `videos.list` call (50 ids per request) and map them back.
+		const ids = videosToInsert.map((v) => v.id);
+		const durationById = new Map<string, number | null>();
+		for (let i = 0; i < ids.length; i += 50) {
+			const batch = ids.slice(i, i + 50).join(',');
+			const durationsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${batch}&key=${env.YOUTUBE_API_KEY}`;
+			try {
+				const durationsRes = await fetch(durationsUrl);
+				const durationsData = await durationsRes.json();
+				for (const item of durationsData.items ?? []) {
+					durationById.set(item.id, parseIsoDuration(item.contentDetails?.duration));
+				}
+			} catch (err) {
+				// Duration is best-effort — never fail the whole import over it.
+				console.warn('[youtube-ingest] duration lookup failed →', err);
+			}
+		}
+		for (const video of videosToInsert) {
+			video.duration = durationById.get(video.id) ?? null;
+		}
 
 		responsePayload = {
 			success: true,
