@@ -1,194 +1,115 @@
-# Waha · Admin Dashboard
+<!-- prettier-ignore -->
+<div align="center">
+<img src="./static/favicon.png" alt="" height="72" />
 
-لوحة تحكم إدارية لمراجعة المحتوى — SvelteKit (SSR) + Supabase + Tailwind CSS v4، جاهزة للنشر على Cloudflare Pages.
+# لوحة تحكم واحة · Waha Admin
 
-An admin moderation dashboard for the **Waha** media streaming app: review pending
-videos, approve them or delete them — fully server-rendered, no client-side API
-calls, service-role key never leaves the server.
+[العربية](#العربية) • [English](#english)
 
-## Features
-
-- 🏷 **Fixed category list** — every category picker (inline card/table editor,
-  import modal, bulk tagging, filter) uses the same fixed six categories:
-  **رسوم متحركة · أناشيد · قصص · معرفة · برامج دينية · عام**. An empty choice
-  clears the category (SQL NULL). Changes go through `?/set-category`.
-- 📅 **Date-of-addition sorting** — the list is ordered by `created_at`
-  (newest first by default) with an الأحدث/الأقدم toggle in the toolbar;
-  cards and table rows show a relative "added" time. Falls back to id
-  ordering if the column is missing.
-- 🎯 **Group selection** — per-card checkboxes + "تحديد الكل"; a floating
-  action bar offers bulk **approve** (`?/approve-selected`) and bulk **delete**
-  (`?/delete-selected`) with a confirm dialog. Selection survives tab switches
-  and searches; it clears after a successful bulk action.
-- 📊 **Live stats bar** — total / pending / approved counts on every load
-- 🗂 **Two tabs** — Pending queue (oldest first) and Recently approved (latest 60)
-- 🔍 **Instant search** — filters both tabs by title, video id, or category (client-side)
-- ✅ **Approve** a single video, ⚡ **bulk-approve all** pending in one round-trip
-- ↩ **Revert** an approved video back to pending (undo mistakes)
-- 🗑 **Delete** with a confirmation dialog
-- 🔔 **Toast feedback** for every action, per-card spinners, double-submit guards
-- 🖥 **Mature admin UI** — dense icon-based cards (up to 4 columns on wide
-  screens, 2 on tablets), SVG icons, blue ring on selected cards, a floating
-  selection bar for bulk actions and compact KPI cards that double as tab
-  shortcuts
-- 📱 **Responsive RTL UI** with Arabic-first typography — two-row toolbar,
-  condensed labels on phones, horizontally scrollable tabs, a min-width
-  table with horizontal scrolling, and a thumb-reach bulk action bar on
-  small screens
-- 🚫 **No-JS fallback** — every action is a plain HTML form that still works
-  without JavaScript
+</div>
 
 ---
 
-## Stack
+## العربية
 
-| Layer     | Tech                                          |
-| --------- | --------------------------------------------- |
-| Framework | SvelteKit 2 + Svelte 5 (SSR)                  |
-| Hosting   | `@sveltejs/adapter-cloudflare` (Pages/Workers) |
-| Styling   | Tailwind CSS v4 (via `@tailwindcss/vite`)      |
-| Database  | Supabase (PostgreSQL)                          |
+لوحة تحكم عربية (RTL) لإدارة مكتبة فيديوهات يوتيوب: استيراد المحتوى، مراجعته، فحص صلاحيته، وتصديره — مع تخزين على Supabase ونشر على Cloudflare Pages.
 
----
+### المزايا
 
-## 1. Prerequisites
+- **استيراد من يوتيوب** — رابط فيديو أو قائمة تشغيل أو قناة؛ تُضاف العناصر الجديدة بحالة `pending`.
+- **قائمة مراجعة** — تبويبات: بانتظار المراجعة، معتمدة، غير متاحة، الكل.
+- **فحص الصلاحية** — يكشف المحذوف/غير المتاح، والخاص، وغير المسموح بتضمينه، مع تعطيل أو حذف جماعي.
+- **إجراءات جماعية** — تحديد واعتماد/حذف/تغيير تصنيف عدة فيديوهات دفعة واحدة.
+- **تراجع وسجل نشاط** — كل عملية قابلة للتراجع من الإشعار أو من سجل النشاط.
+- **بحث وفلاتر وترتيب وتصدير** — بحث فوري، تصفية بالتصنيف، ترتيب بالتاريخ، وتصدير CSV/JSON.
+- **واجهة داكنة RTL** بتصميم متجاوب تعمل حتى بدون JavaScript.
 
-- Node.js **20+**
-- A Supabase project with the tables below already created
-- A (free) Cloudflare account for deployment
-
-```sql
--- Reference schema (you said it already exists)
-create table videos (
-  id         text primary key,
-  title      text,
-  thumbnail  text,
-  category   text,
-  status     text not null default 'pending',
-  created_at timestamptz not null default now()  -- powers date-of-addition sorting
-);
-```
-
-> If your existing table has no `created_at` column, add it (rows get the
-> time they were inserted from then on):
->
-> ```sql
-> alter table videos add column if not exists created_at timestamptz not null default now();
-> ```
->
-> Until the column exists the dashboard silently falls back to id-based
-> ordering, so nothing breaks.
-
-## 2. Project setup
-
-```bash
-# create the project folder and enter it
-mkdir waha-admin && cd waha-admin
-
-# initialize git (optional but recommended)
-git init
-
-# install everything
-npm install @supabase/supabase-js
-npm install -D @sveltejs/kit@latest @sveltejs/adapter-cloudflare@latest \
-  @sveltejs/vite-plugin-svelte@latest svelte@latest vite@latest \
-  tailwindcss@latest @tailwindcss/vite@latest svelte-check typescript
-```
-
-Or, if you are starting from this repository, simply:
+### التشغيل
 
 ```bash
 npm install
+cp .env.example .env    # ثم املأ القيم
+npm run dev             # http://localhost:5173
 ```
 
-## 3. Environment variables
+أنشئ الجدول في Supabase:
 
-Copy the template and fill in your values from
-**Supabase Dashboard → Project Settings → API**:
+```sql
+create table if not exists videos (
+  id         text primary key,
+  title      text not null,
+  thumbnail  text,
+  category   text,
+  status     text not null default 'pending',
+  duration   text,
+  created_at timestamptz not null default now()
+);
+```
+
+### متغيرات البيئة
+
+| المتغيّر | الوصف |
+| --- | --- |
+| `SUPABASE_URL` | رابط مشروع Supabase. |
+| `SUPABASE_SERVICE_ROLE_KEY` | مفتاح service-role (يتجاوز RLS). |
+| `YOUTUBE_API_KEY` | مفتاح YouTube Data API v3. |
+
+### النشر
+
+على **Cloudflare Pages**: أمر البناء `npm run build` ومجلد الإخراج `.svelte-kit/cloudflare`. أضف المتغيرات الثلاثة كمتغيرات مشفّرة لبيئتي Production و Preview.
+
+> [!IMPORTANT]
+> مفتاح `SUPABASE_SERVICE_ROLE_KEY` يعمل من الخادم فقط ويتجاوز Row Level Security. لا تضعه في أي كود يعمل في المتصفح، وضع المصادقة أمام النشر قبل إتاحته للعامة.
+
+---
+
+## English
+
+An Arabic-first RTL console for managing a YouTube video library: ingest, review, audit availability, and export — backed by Supabase and deployed on Cloudflare Pages.
+
+### Features
+
+- **YouTube ingestion** — paste a video, playlist, or channel URL; new rows land as `pending`.
+- **Review queue** — tabs for pending, approved, unavailable, and all.
+- **Availability audit** — detects deleted/unavailable, private, and not-embeddable videos, with bulk disable or delete.
+- **Bulk actions** — select many rows and approve, delete, or re-categorize at once.
+- **Undo & activity log** — every action is revertible from the toast or the activity drawer.
+- **Search, sort & export** — instant search, category filter, date sorting, and CSV/JSON export.
+- **Dark RTL UI** — responsive, and it works without JavaScript.
+
+### Quick start
 
 ```bash
-cp .env.example .env
+npm install
+cp .env.example .env    # then fill in the values
+npm run dev             # http://localhost:5173
 ```
 
-```dotenv
-SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIs..."   # ⚠️ secret!
+Create the table in Supabase:
+
+```sql
+create table if not exists videos (
+  id         text primary key,
+  title      text not null,
+  thumbnail  text,
+  category   text,
+  status     text not null default 'pending',
+  duration   text,
+  created_at timestamptz not null default now()
+);
 ```
 
-> **Why the service_role key?** The admin panel is a trusted server context; the
-> key bypasses RLS so moderation actions work without per-user policies. It is
-> loaded **only** through `$env/dynamic/private` inside `src/lib/server/`, which
-> SvelteKit guarantees never to bundle for the client.
+### Environment variables
 
-## 4. Run locally
+| Variable | Purpose |
+| --- | --- |
+| `SUPABASE_URL` | Your Supabase project URL. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service-role key (bypasses RLS). |
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key. |
 
-```bash
-npm run dev          # http://localhost:5173
-npm run check        # typecheck (svelte-check)
-npm run build        # production build (Cloudflare adapter)
-npm run preview      # preview the production build
-```
+### Deploy
 
-## 5. How it works
+To **Cloudflare Pages**: build command `npm run build`, output directory `.svelte-kit/cloudflare`. Add the three variables as encrypted env vars for both Production and Preview.
 
-```
-src/
-├── app.css                       # Tailwind v4 entry + Cairo font
-├── app.html                      # <html lang="ar" dir="rtl">
-├── lib/
-│   ├── components/VideoCard.svelte  # shared card (approve/revert/delete)
-│   ├── server/supabase.ts           # 🔒 service_role client (server-only)
-│   └── types.ts                     # shared VideoRow type
-└── routes/
-    ├── +layout.svelte
-    ├── +page.server.ts           # load() + actions: approve, revert,
-    │                             #   approve-all, delete
-    └── +page.svelte              # RTL dashboard: stats, tabs, search,
-                                  #   bulk approve (use:enhance forms)
-```
-
-- **`load()`** — fetches the filtered, paginated video list ordered by
-  `created_at` (date of addition), total counts, and serves the **fixed**
-  category list (from `$lib/types.ts`, never DB-derived) via the
-  service-role client.
-- **`?/approve`** — sets the video's `status = 'approved'`.
-- **`?/revert`** — sets the video's `status = 'pending'` (undo).
-- **`?/set-category`** — updates (or clears) one video's `category`.
-- **`?/approve-all`** — one bulk update flipping every pending video to approved.
-- **`?/approve-selected`** — bulk-approves the ids posted from the selection bar.
-- **`?/delete-selected`** — bulk-deletes the selected ids (confirm-guarded).
-- **`?/delete`** — permanently deletes the video row.
-- Both actions are plain `<form method="POST" action="?/...">` progressively
-  enhanced with `use:enhance` — they work without JavaScript and update
-  in-place with it. After each action `invalidateAll()` re-runs `load`, so the
-  queue is always fresh; no client-side `fetch()` anywhere.
-
-## 6. Deploy to Cloudflare Pages
-
-1. Push this repo to GitHub.
-2. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git**,
-   select the repo.
-3. Build settings:
-   - **Framework preset:** `SvelteKit`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `.svelte-kit/cloudflare`
-4. **Settings → Environment variables** (Production *and* Preview):
-
-   | Variable                    | Value                        |
-   | --------------------------- | ---------------------------- |
-   | `SUPABASE_URL`              | `https://YOUR_PROJECT_REF.supabase.co` |
-   | `SUPABASE_SERVICE_ROLE_KEY` | your service_role key        |
-
-5. Deploy. 🎉
-
-> **Rotation note:** if the service_role key ever leaks, rotate it in Supabase
-> (Settings → API → Rotate) and update the Pages variable.
-
-## 7. Security checklist
-
-- [x] `SUPABASE_SERVICE_ROLE_KEY` only read via `$env/dynamic/private`
-- [x] Supabase client created **only** in `src/lib/server/` (unimportable from the browser)
-- [x] No REST endpoints, no client-side `fetch()` — only form actions
-- [x] `.env` git-ignored; `.env.example` committed as a template
-- [ ] Optional hardening: add Cloudflare Access / basic auth in front of the dashboard,
-      since anyone with the URL can moderate content.
+> [!IMPORTANT]
+> `SUPABASE_SERVICE_ROLE_KEY` is server-only and bypasses Row Level Security. Never import it into client code, and put authentication in front of the deployment before making it public.
